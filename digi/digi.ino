@@ -1,55 +1,51 @@
-#define t_ON 200
-#define t_OFF 200
+#define N_DIGI 1
+
+#define LIGHT_UMB 300
+#define L_CONT 5
+#define LED 13
+#define LDR A0
+
 
 char letra=0;
-int t_0=0;
-
-int LDR = A0; 
-
-int LED = 12;   
- 
+char n_letra=0;
+int n=0;
+   
 
 void setup()
 {
   Serial.begin(9600);
+
   pinMode(LED, OUTPUT);
-  pinMode(LDR, OUTPUT);
+  pinMode(LDR, INPUT);
 }
 
 void loop()
 {
+  //Si el puerto está disponible y 
   if (Serial.available()){
-    Serial.println("Dato");
-    letra=Serial.read();
-    Serial.println(letra);
+    if(letra!=n_letra){
+      Serial.print(N_DIGI);
+      Serial.println(n_letra);
+      letra=n_letra;
+    }
   }
 
-  if (letra=='L'){
-    digitalWrite(13, LOW);
-  }
-  else if(letra=='H'){
-    if(millis()>t_0 && millis()<t_0+t_ON){
-      digitalWrite(13, HIGH);
-    }
-    else if(millis()>t_0+t_ON && millis()<t_0+t_OFF){
-      digitalWrite(13, LOW);
-    }
-    else 
-      t_0=millis();
-  }
+  // Contador para cambiar de estado y no cambiar con cualquier pico de valor
+  if (analogRead(LDR) > LIGHT_UMB && n<L_CONT) n++;
+  else if(analogRead(LDR) < LIGHT_UMB && n>0) n--; 
 
-  Serial.println(analogRead(LDR));  
-  
-  if (analogRead(LDR) > 300)  
+
+  if(n==L_CONT) 
   {  
-      Serial.println("LIGHT ON");  
+      n_letra='H';  
       digitalWrite(LED, HIGH);  
   }   
-  else  
+  else if(n==0)  
   {  
-      Serial.println("LIGHT DOWN");  
+      n_letra='L';  
       digitalWrite(LED, LOW);  
   }  
   
-  delay(1000); 
+
+  delay(100); 
 }
